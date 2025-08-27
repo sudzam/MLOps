@@ -1,4 +1,4 @@
-# Summary: Handle data loading, preprocessing, and simulating drift for sentiment analysis using GPT-2
+# Summary: Handle data loading, preprocessing, and simulating drift for sentiment analysis using GPT-2.
 
 import pandas as pd
 from datasets import load_dataset # type: ignore
