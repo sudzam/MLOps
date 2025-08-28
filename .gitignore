@@ -1,5 +1,4 @@
 /raw_data.csv
-/mlruns
 /__pycache__/
 /flows/mlruns
 /flows/.metaflow
