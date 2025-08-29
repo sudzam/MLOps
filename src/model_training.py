@@ -4,6 +4,7 @@ os.environ.pop("MLFLOW_EXPERIMENT_ID", None)
 import mlflow
 import mlflow.pytorch
 from config import MODEL_NAME, MODEL_DIR, MAX_LENGTH, BATCH_SIZE, NUM_EPOCHS
+from datasets import load_dataset
 import os
 from time import sleep
 
@@ -14,21 +15,29 @@ class GPT2Trainer:
         import torch
         print ("Importing transformers...")
         from transformers import GPT2LMHeadModel
-        from transformers import GPT2Tokenizer
-        self.device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+        from transformers import GPT2Tokenizer, DataCollatorForLanguageModeling
+        from datasets import load_dataset
+        
+        # Set device
+        if torch.backends.mps.is_available():
+            self.device = "mps"
+        elif torch.cuda.is_available():
+            self.device = "cuda"
+        else:
+            self.device = "cpu"
         print(f"Using device: {self.device}")
-        sleep(10)
+        
         self.tokenizer = GPT2Tokenizer.from_pretrained(MODEL_NAME)
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.model = GPT2LMHeadModel.from_pretrained(MODEL_NAME)
         
     # Create dataset for training
     def create_dataset(self, text_file):
-        dataset = TextDataset(
-            tokenizer=self.tokenizer,
-            file_path=text_file,
-            block_size=MAX_LENGTH
-        )
+        dataset = load_dataset(
+            'text',
+            data_files=text_file,
+            split='train'
+        ).map(lambda examples: {'input_ids': self.tokenizer(examples['text'], truncation=True, padding='max_length', max_length=MAX_LENGTH)['input_ids']})
         return dataset
     
     # Fine-tune GPT-2 model
